@@ -1,8 +1,14 @@
 #include "pch.h"
 #include "Lock.h"
 
-void Lock::WriteLock()
+#include "DeadLockProfiler.h"
+
+void Lock::WriteLock(const char* name)
 {
+#ifdef _DEBUG
+	GDeadLockProfiler->PushLock(name);
+#endif
+
 	const uint32 lockThreadID = (_lockFlag.load() & WRITE_THREAD_MASK) >> 16;
 	if (lockThreadID == LThreadID)
 	{
@@ -31,8 +37,12 @@ void Lock::WriteLock()
 	}
 }
 
-void Lock::WriteUnlock()
+void Lock::WriteUnlock(const char* name)
 {
+#ifdef _DEBUG
+	GDeadLockProfiler->PopLock(name);
+#endif
+
 	if ((_lockFlag.load() & READ_COUNT_MASK) != 0)
 		CRASH("INVALID_UNLOCK_MASK");
 
@@ -41,8 +51,12 @@ void Lock::WriteUnlock()
 		_lockFlag.store(EMPTY_FLAG);
 }
 
-void Lock::ReadLock()
+void Lock::ReadLock(const char* name)
 {
+#ifdef _DEBUG
+	GDeadLockProfiler->PushLock(name);
+#endif
+
 	const uint32 lockThreadID = (_lockFlag.load() & WRITE_THREAD_MASK) >> 16;
 	if (lockThreadID == LThreadID)
 	{
@@ -70,8 +84,12 @@ void Lock::ReadLock()
 
 }
 
-void Lock::ReadUnlock()
+void Lock::ReadUnlock(const char* name)
 {
+#ifdef _DEBUG
+	GDeadLockProfiler->PopLock(name);
+#endif
+
 	if ((_lockFlag.fetch_sub(1) & READ_COUNT_MASK) == 0)
 		CRASH("MULTIPLE_UNLOCK");
 }
