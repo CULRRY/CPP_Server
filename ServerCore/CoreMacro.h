@@ -15,15 +15,6 @@
 /*------------------
  *	   Memory	   *
  ------------------*/
-#ifdef _DEBUG
-#define ALLOC(size)		PoolAllocator::Alloc(size)
-#define RELEASE(ptr)	PoolAllocator::Release(ptr)
-#else
-#define ALLOC(size)		BaseAllocator::Alloc(size)
-#define RELEASE(ptr)	BaseAllocator::Release(ptr)
-#endif
-
-
 
 
 /*------------------
