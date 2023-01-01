@@ -2,74 +2,30 @@
 #include <iostream>
 
 #include "ThreadManager.h"
+#include "Memory.h"
 
-class LockTest
-{
-	USE_LOCK;
+#include <WinSock2.h>
+#include <MSWSock.h>
+#include <WS2tcpip.h>
+#include  "SocketUtils.h"
+#pragma comment(lib, "ws2_32.lib")
 
-public:
-	int32 TestRead()
-	{
-		READ_LOCK;
-
-		TestPush();
-
-		if (_queue.empty())
-			return -1;
-		return _queue.front();
-	}
-
-	void TestPush()
-	{
-		WRITE_LOCK;
-		_queue.push(rand() % 100);
-	}
-
-	void TestPop()
-	{
-		WRITE_LOCK;
-		if (!_queue.empty())
-			_queue.pop();
-	}
-
-private:
-	queue<int32> _queue;
-};
-
-
-LockTest testLock;
-
-void ThreadWrite()
-{
-	while (true)
-	{
-		testLock.TestPush();
-		this_thread::sleep_for(1ms);
-		testLock.TestPop();
-	}
-}
-
-void ThreadRead()
-{
-	while (true)
-	{
-
-		int32 val = testLock.TestRead();
-		cout << val << endl;
-		this_thread::sleep_for(1ms);
-	}
-}
 
 int main()
 {
-	for (int32 i = 0; i < 2; i++)
-	{
-		GThreadManager->Launch(ThreadWrite);
-	}
+	SOCKET socket = SocketUtils::CreateSocket();
 
-	for (int32 i = 0; i < 5; i++)
+	SocketUtils::BindAnyAddress(socket, 7777);
+
+	SocketUtils::Listen(socket);
+
+	SOCKET clientSocket = ::accept(socket, nullptr, nullptr);
+
+	cout << "Client Connected!" << endl;
+
+	while (true)
 	{
-		GThreadManager->Launch(ThreadRead);
+
 	}
 
 	GThreadManager->Join();
