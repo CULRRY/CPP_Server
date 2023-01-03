@@ -58,12 +58,12 @@ public:
 	T* allocate(size_t count)
 	{
 		const int32 size = static_cast<int32>(count * sizeof(T));
-		return static_cast<T*>(ALLOC(size));
+		return static_cast<T*>(PoolAllocator::Alloc(size));
 	}
 
-	T* deallocate(T* ptr, size_t count)
+	void deallocate(T* ptr, size_t count)
 	{
-		RELEASE(ptr);
+		PoolAllocator::Release(ptr);
 	}
 
 	template<typename U>
