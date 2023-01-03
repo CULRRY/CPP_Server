@@ -15,6 +15,17 @@ Session::~Session()
 	SocketUtils::Close(_socket);
 }
 
+void Session::Send(BYTE* buffer, int32 len)
+{
+	SendEvent* sendEvent = xnew<SendEvent>();
+	sendEvent->owner = shared_from_this();
+	sendEvent->buffer.resize(len);
+	::memcpy(sendEvent->buffer.data(), buffer, len);
+
+	WRITE_LOCK;
+	RegisterSend(sendEvent);
+}
+
 void Session::Disconnect(const WCHAR* cause)
 {
 	if (_connected.exchange(false) == false)
@@ -29,6 +40,7 @@ void Session::Disconnect(const WCHAR* cause)
 
 void Session::RegisterConnect()
 {
+
 }
 
 void Session::RegisterRecv()
@@ -38,6 +50,7 @@ void Session::RegisterRecv()
 		return;
 	}
 
+	_recvEvent.Init();
 	_recvEvent.owner = shared_from_this();
 
 	WSABUF wsaBuf;
@@ -58,8 +71,29 @@ void Session::RegisterRecv()
 	}
 }
 
-void Session::RegisterSend()
+void Session::RegisterSend(SendEvent* sendEvent)
 {
+	if (IsConnected() == false)
+	{
+		return;
+	}
+
+	WSABUF wsaBuf;
+	wsaBuf.buf = reinterpret_cast<char*>(sendEvent->buffer.data());
+	wsaBuf.len = static_cast<ULONG>(sendEvent->buffer.size());
+
+	DWORD numOfBytes = 0;
+	if (SOCKET_ERROR == ::WSASend(_socket, &wsaBuf, 1, OUT &numOfBytes, 0, sendEvent, nullptr))
+	{
+		int32 errorCode = ::WSAGetLastError();
+		if (errorCode != WSA_IO_PENDING)
+		{
+			HandleError(errorCode);
+			sendEvent->owner = nullptr;
+			xdelete(sendEvent);
+		}
+	}
+
 }
 
 void Session::ProcessConnect()
@@ -83,13 +117,23 @@ void Session::ProcessRecv(int32 numOfBytes)
 		return;
 	}
 
-	cout << "Recv Data Len = " << numOfBytes << endl;
+	OnRecv(_recvBuffer, numOfBytes);
 
 	RegisterRecv();
 }
 
-void Session::ProcessSend(int32 numOfBytes)
+void Session::ProcessSend(SendEvent* sendEvent, int32 numOfBytes)
 {
+	sendEvent->owner = nullptr;
+	xdelete(sendEvent);
+
+	if (numOfBytes == 0)
+	{
+		Disconnect(L"Send 0");
+		return;
+	}
+
+	OnSend(numOfBytes);
 }
 
 void Session::HandleError(int32 errorCode)
@@ -122,7 +166,7 @@ void Session::Dispatch(IocpEvent* iocpEvent, int32 numOfBytes)
 		ProcessRecv(numOfBytes);
 		break;
 	case EventType::Send:
-		ProcessSend(numOfBytes);
+		ProcessSend(static_cast<SendEvent*>(iocpEvent), numOfBytes);
 		break;
 	default:
 		break;
