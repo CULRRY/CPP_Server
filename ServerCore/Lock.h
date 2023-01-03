@@ -46,7 +46,7 @@ public:
 	~ReadLockGuard() { _lock.ReadUnlock(_name); }
 
 private:
-	Lock& _lock;
+	Lock&		_lock;
 	const char* _name;
 };
 
@@ -57,7 +57,7 @@ public:
 	~WriteLockGuard() { _lock.WriteUnlock(_name); }
 
 private:
-	Lock& _lock;
+	Lock&		_lock;
 	const char* _name;
 };
 

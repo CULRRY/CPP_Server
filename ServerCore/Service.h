@@ -38,14 +38,14 @@ public:
 protected:
 	USE_LOCK;
 
-	ServiceType _type;
-	NetAddress _netAddress = {};
-	IocpCoreRef _iocpCore;
+	ServiceType			_type;
+	NetAddress			_netAddress = {};
+	IocpCoreRef			_iocpCore;
 
-	Set<SessionRef> _sessions;
-	int32 _sessionCount = 0;
-	int32 _maxSessionCount = 0;
-	SessionFactory _sessionFactory;
+	Set<SessionRef>		_sessions;
+	int32				_sessionCount = 0;
+	int32				_maxSessionCount = 0;
+	SessionFactory		_sessionFactory;
 };
 
 

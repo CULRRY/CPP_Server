@@ -82,7 +82,7 @@ int main()
 		}
 
 		cout << "Data Send Len = " << sizeof(sendBuffer) << endl;
-		//this_thread::sleep_for(1s);
+		this_thread::sleep_for(1s);
 	}
 
 	::closesocket(clientSocket);
