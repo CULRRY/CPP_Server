@@ -1,15 +1,5 @@
 ﻿#include "pch.h"
-#include <iostream>
-#include "CorePch.h"
-#include <atomic>
-#include <mutex>
-#include <windows.h>
-#include <future>
 #include "ThreadManager.h"
-
-
-#include "SocketUtils.h"
-#include "Listener.h"
 #include "Service.h"
 #include "Session.h"
 
@@ -31,6 +21,7 @@ public:
 
 int main()
 {
+	cout << "Server" << endl;
 	ServerServiceRef service = MakeShared<ServerService>(
 		NetAddress(L"127.0.0.1", 7777),
 		MakeShared<IocpCore>(),

@@ -5,6 +5,7 @@ class Session;
 enum class EventType
 {
 	Connect,
+	Disconnect,
 	Accept,
 	Recv,
 	Send,
@@ -26,6 +27,12 @@ class ConnectEvent : public IocpEvent
 {
 public:
 	ConnectEvent() : IocpEvent(EventType::Connect) { }
+};
+
+class DisconnectEvent : public IocpEvent
+{
+public:
+	DisconnectEvent() : IocpEvent(EventType::Disconnect) { }
 };
 
 class AcceptEvent : public IocpEvent
