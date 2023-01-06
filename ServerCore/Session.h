@@ -79,3 +79,8 @@ private:
 	DisconnectEvent			_disconnectEvent;
 };
 
+
+class PacketSession
+{
+	
+};

@@ -18,10 +18,19 @@ Session::~Session()
 
 void Session::Send(SendBufferRef sendBuffer)
 {
-	WRITE_LOCK;
-	_sendQueue.push(sendBuffer);
+	if (IsConnected() == false)
+		return;
 
-	if (_sendRegisterd.exchange(true) == false)
+	bool registerSend = false;
+	{
+		WRITE_LOCK;
+		_sendQueue.push(sendBuffer);
+
+		if (_sendRegisterd.exchange(true) == false)
+			registerSend = true;
+	}
+
+	if (registerSend)
 		RegisterSend();
 }
 
