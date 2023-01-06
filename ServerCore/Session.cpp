@@ -266,6 +266,7 @@ void Session::HandleError(int32 errorCode)
 	}
 }
 
+
 HANDLE Session::GetHandle()
 {
 	return reinterpret_cast<HANDLE>(_socket);
@@ -292,3 +293,33 @@ void Session::Dispatch(IocpEvent* iocpEvent, int32 numOfBytes)
 	}
 }
 
+PacketSession::PacketSession()
+{
+}
+
+PacketSession::~PacketSession()
+{
+}
+
+int32 PacketSession::OnRecv(BYTE* buffer, int32 len)
+{
+	int32 processLen = 0;
+
+	while (true)
+	{
+		int32 dataSize = len - processLen;
+
+		if (dataSize < sizeof(PacketHeader))
+			break;
+
+		PacketHeader header = *(reinterpret_cast<PacketHeader*>(&buffer[0]));
+		if (dataSize < header.size)
+			break;
+
+		OnRecvPacket(&buffer[0], header.size);
+
+		processLen += header.size;
+	}
+
+	return processLen;
+}

@@ -3,6 +3,7 @@
 #include "Service.h"
 #include "Session.h"
 #include "GameSession.h"
+#include "GameSessionManager.h"
 
 
 int main()
@@ -16,7 +17,7 @@ int main()
 
 	ASSERT_CRASH(service->Start());
 
-	for (int32 i = 0; i < 1; i++)
+	for (int32 i = 0; i < 5; i++)
 	{
 		GThreadManager->Launch([=]()
 			{
@@ -25,6 +26,22 @@ int main()
 					service->GetIocpCore()->Dispatch();
 				}
 			});
+	}
+
+	char sendData[] = "Hello world";
+
+	while (true)
+	{
+		SendBufferRef sendBuffer = GSendBufferManager->Open(4096);
+		BYTE* buffer = sendBuffer->Buffer();
+
+		reinterpret_cast<PacketHeader*>(buffer)->size = (sizeof(sendData) + sizeof(PacketHeader));
+		reinterpret_cast<PacketHeader*>(buffer)->id = 1;
+		::memcpy(&buffer[4], sendData, sizeof(sendData));
+		sendBuffer->Close(sizeof(sendData) + sizeof(PacketHeader));
+
+		GSessionManager.Broadcast(sendBuffer);
+		this_thread::sleep_for(250ms);
 	}
 
 	GThreadManager->Join();

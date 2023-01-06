@@ -2,21 +2,20 @@
 #include "GameSession.h"
 #include "GameSessionManager.h"
 
-int32 GameSession::OnRecv(BYTE* buffer, int32 len)
+int32 GameSession::OnRecvPacket(BYTE* buffer, int32 len)
 {
-	cout << "OnRecv Len = " << len << endl;
 
-	SendBufferRef sendBuffer = GSendBufferManager->Open(4096);
-	::memcpy(sendBuffer->Buffer(), buffer, len);
-	sendBuffer->Close(len);
-	GSessionManager.Broadcast(sendBuffer);
+	PacketHeader header = *reinterpret_cast<PacketHeader*>(buffer);
+	cout << "Packet ID : " << header.id << " Size : " << header.size << endl;
+
+
 
 	return len;
 }
 
 void GameSession::OnSend(int32 len)
 {
-	cout << "OnSend Len = " << len << endl;
+
 }
 
 void GameSession::OnConnected()
