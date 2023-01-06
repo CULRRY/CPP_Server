@@ -22,58 +22,60 @@ public:
 	virtual ~Session();
 
 public:
-	void				Send(BYTE* buffet, int32 len);
-	bool				Connect();
-	void				Disconnect(const WCHAR* cause);
-
-	shared_ptr<Service>	GetService() { return _service.lock(); }
-	void				SerService(shared_ptr<Service> service) { _service = service; }
+	void					Send(SendBufferRef sendBuffer);
+	bool					Connect();
+	void					Disconnect(const WCHAR* cause);
+		
+	shared_ptr<Service>		GetService() { return _service.lock(); }
+	void					SerService(shared_ptr<Service> service) { _service = service; }
 
 public:
-	void				SetNetAddress(NetAddress address) { _netAddress = address; }
-	NetAddress			GetAddress() { return _netAddress; }
-	SOCKET				GetSocket() { return _socket; }
-	bool				IsConnected() { return _connected; }
-	SessionRef			GetSessionRef() { return static_pointer_cast<Session>(shared_from_this()); }
+	void					SetNetAddress(NetAddress address) { _netAddress = address; }
+	NetAddress				GetAddress() { return _netAddress; }
+	SOCKET					GetSocket() { return _socket; }
+	bool					IsConnected() { return _connected; }
+	SessionRef				GetSessionRef() { return static_pointer_cast<Session>(shared_from_this()); }
 
 private:
-	virtual HANDLE		GetHandle() override;
-	virtual void		Dispatch(IocpEvent* iocpEvent, int32 numOfBytes) override;
+	virtual HANDLE			GetHandle() override;
+	virtual void			Dispatch(IocpEvent* iocpEvent, int32 numOfBytes) override;
 
 private:
-	bool				RegisterConnect();
-	void				RegisterDisconnect();
-	void				RegisterRecv();
-	void				RegisterSend(SendEvent* sendEvent);
+	bool					RegisterConnect();
+	void					RegisterDisconnect();
+	void					RegisterRecv();
+	void					RegisterSend();
 
-	void				ProcessConnect();
-	void				ProcessDisconnect();
-	void				ProcessRecv(int32 numOfBytes);
-	void				ProcessSend(SendEvent* sendEvent, int32 numOfBytes);
+	void					ProcessConnect();
+	void					ProcessDisconnect();
+	void					ProcessRecv(int32 numOfBytes);
+	void					ProcessSend(int32 numOfBytes);
 
-	void				HandleError(int32 errorCode);
+	void					HandleError(int32 errorCode);
 
 protected:
-	virtual void		OnConnected() {}
-	virtual int32		OnRecv(BYTE* buffer, int32 len) { return len; }
-	virtual void		OnSend(int32 len) {}
-	virtual void		OnDisconnected() {}
-
-public:
-	RecvBuffer			_recvBuffer;
+	virtual void			OnConnected() {}
+	virtual int32			OnRecv(BYTE* buffer, int32 len) { return len; }
+	virtual void			OnSend(int32 len) {}
+	virtual void			OnDisconnected() {}
 
 private:
-	weak_ptr<Service>	_service;
-	SOCKET				_socket = INVALID_SOCKET;
-	NetAddress			_netAddress = {};
-	Atomic<bool>		_connected = false;
+	weak_ptr<Service>		_service;
+	SOCKET					_socket = INVALID_SOCKET;
+	NetAddress				_netAddress = {};
+	Atomic<bool>			_connected = false;
 
 private:
 	USE_LOCK;
+	RecvBuffer				_recvBuffer;
+
+	Queue<SendBufferRef>	_sendQueue;
+	Atomic<bool>			_sendRegisterd{ false };
 
 private:
-	RecvEvent			_recvEvent;
-	ConnectEvent		_connectEvent;
-	DisconnectEvent		_disconnectEvent;
+	SendEvent				_sendEvent;
+	RecvEvent				_recvEvent;
+	ConnectEvent			_connectEvent;
+	DisconnectEvent			_disconnectEvent;
 };
 
