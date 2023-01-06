@@ -46,10 +46,6 @@ void Session::Disconnect(const WCHAR* cause)
 
 	wcout << "Disconnect : " << cause << endl;
 
-	OnDisconnected();
-	SocketUtils::Close(_socket);
-	GetService()->ReleaseSession(GetSessionRef());
-
 	RegisterDisconnect();
 }
 
@@ -196,6 +192,9 @@ void Session::ProcessConnect()
 void Session::ProcessDisconnect()
 {
 	_disconnectEvent.owner = nullptr;
+
+	OnDisconnected();
+	GetService()->ReleaseSession(GetSessionRef());
 }
 
 void Session::ProcessRecv(int32 numOfBytes)
