@@ -3,7 +3,7 @@
 #include "Service.h"
 #include "Session.h"
 
-char sendData[] = "asdsadsadasd";
+BYTE sendData[] = "asdsadsadasd";
 
 class ServerSession : public Session
 {
@@ -11,8 +11,9 @@ protected:
 	void OnConnected() override
 	{
 		cout << "Server Connected" << endl;
-		SendBufferRef sendBuffer = MakeShared<SendBuffer>(4096);
-		sendBuffer->CopyData(sendData, sizeof(sendData));
+		SendBufferRef sendBuffer = GSendBufferManager->Open(4096);
+		::memcpy(sendBuffer->Buffer(), sendData, sizeof(sendData));
+		sendBuffer->Close(sizeof(sendData));
 		Send(sendBuffer);
 	}
 	int32 OnRecv(BYTE* buffer, int32 len) override
@@ -20,8 +21,9 @@ protected:
 		cout << "On Recv Len = " << len << endl;
 
 		this_thread::sleep_for(1s);
-		SendBufferRef sendBuffer = MakeShared<SendBuffer>(4096);
-		sendBuffer->CopyData(sendData, sizeof(sendData));
+		SendBufferRef sendBuffer = GSendBufferManager->Open(4096);
+		::memcpy(sendBuffer->Buffer(), sendData, sizeof(sendData));
+		sendBuffer->Close(sizeof(sendData));
 		Send(sendBuffer);
 		return len;
 	}
@@ -45,11 +47,11 @@ int main()
 		NetAddress(L"127.0.0.1", 7777),
 		MakeShared<IocpCore>(),
 		MakeShared<ServerSession>,
-		5);
+		1);
 
 	ASSERT_CRASH(service->Start());
 
-	for (int32 i = 0; i < 5; i++)
+	for (int32 i = 0; i < 1; i++)
 	{
 		GThreadManager->Launch([=]()
 			{
