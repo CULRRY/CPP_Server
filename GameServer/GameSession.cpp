@@ -1,16 +1,15 @@
 #include "pch.h"
 #include "GameSession.h"
+
 #include "GameSessionManager.h"
+#include "ServerPacketHandler.h"
 
-int32 GameSession::OnRecvPacket(BYTE* buffer, int32 len)
+void GameSession::OnRecvPacket(BYTE* buffer, int32 len)
 {
-
-	PacketHeader header = *reinterpret_cast<PacketHeader*>(buffer);
-	cout << "Packet ID : " << header.id << " Size : " << header.size << endl;
+	ServerPacketHandler::HandlePacket(buffer, len);
 
 
-
-	return len;
+	 
 }
 
 void GameSession::OnSend(int32 len)

@@ -3,6 +3,7 @@
 #include "Service.h"
 #include "Session.h"
 #include "BufferReader.h"
+#include "ClientPacketHandler.h"
 
 char sendData[] = "asdsadsadasd";
 
@@ -14,25 +15,9 @@ protected:
 	{
 		cout << "Server Connected" << endl;
 	}
-	int32 OnRecvPacket(BYTE* buffer, int32 len) override
+	void OnRecvPacket(BYTE* buffer, int32 len) override
 	{
-		BufferReader br(buffer, 4096);
-
-		PacketHeader header;
-		br >> header;
-
-		cout << "Packet ID : " << header.id << " Size : " << header.size << endl;
-		uint64 id;
-		uint32 hp;
-		uint16 att;
-
-		br >> id >> hp >> att;
-		cout << "ID: " << id << " HP: " << hp << " ATT: " << att << endl;
-		char recvBuffer[4096];
-		br.Read(recvBuffer, header.size - sizeof(PacketHeader) - 8 - 4 - 2);
-		cout << recvBuffer << endl;
-
-		return len;
+		ClientPacketHandler::HandlePacket(buffer, len);
 	}
 	void OnSend(int32 len) override
 	{
@@ -54,7 +39,7 @@ int main()
 		NetAddress(L"127.0.0.1", 7777),
 		MakeShared<IocpCore>(),
 		MakeShared<ServerSession>,
-		1000);
+		1);
 
 	ASSERT_CRASH(service->Start());
 
