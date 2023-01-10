@@ -5,7 +5,7 @@
 #include "BufferReader.h"
 #include "ClientPacketHandler.h"
 
-char sendData[] = "asdsadsadasd";
+//WCHAR sendData[] = "asdsadsadasd";
 
 
 class ServerSession : public PacketSession

@@ -6,6 +6,7 @@
 #include "GameSessionManager.h"
 #include "BufferWriter.h"
 #include "ServerPacketHandler.h"
+#include "Protocol.pb.h"
 
 
 int main()
@@ -34,8 +35,27 @@ int main()
 
 	while (true)
 	{
-		vector<BuffData> buffs{ BuffData {100, 1.5f}, BuffData{200, 2.0f}, BuffData{300, 0.7f} };
-		SendBufferRef sendBuffer = ServerPacketHandler::Make_S_TEST(1001, 100, 10, buffs);
+		Protocol::S_TEST pkt;
+		pkt.set_id(1001);
+		pkt.set_hp(300);
+		pkt.set_attack(11);
+
+		{
+			Protocol::BuffData* data = pkt.add_buffs();
+			data->set_buffid(100);
+			data->set_remaintime(1.2f);
+			data->add_victims(400);
+		}
+
+		{
+			Protocol::BuffData* data = pkt.add_buffs();
+			data->set_buffid(500);
+			data->set_remaintime(2.3f);
+			data->add_victims(1000);
+			data->add_victims(2000);
+		}
+
+		SendBufferRef sendBuffer = ServerPacketHandler::MakeSendBuffer(pkt);
 
 		GSessionManager.Broadcast(sendBuffer);
 		this_thread::sleep_for(250ms);

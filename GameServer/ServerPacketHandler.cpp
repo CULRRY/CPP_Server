@@ -18,27 +18,7 @@ void ServerPacketHandler::HandlePacket(BYTE* buffer, int32 len)
 	}
 }
 
-SendBufferRef ServerPacketHandler::Make_S_TEST(uint64 id, uint32 hp, uint16 att, vector<BuffData> buffs)
+SendBufferRef ServerPacketHandler::MakeSendBuffer(Protocol::S_TEST& pkt)
 {
-	SendBufferRef sendBuffer = GSendBufferManager->Open(4096);
-	BufferWriter bw(sendBuffer->Buffer(), 4096);
-
-	PacketHeader* header = bw.Reserve<PacketHeader>();
-
-
-	bw << id << hp << att;
-
-	bw << (uint16)buffs.size();
-
-	for (BuffData& buff : buffs)
-	{
-		bw << buff.buffId << buff.remainTime;
-	}
-
-	header->size = bw.WriteSize();
-	header->id = S_TEST;
-
-	sendBuffer->Close(bw.WriteSize());
-
-	return sendBuffer;
+	return _MakeSendBuffer(pkt, S_TEST);
 }
