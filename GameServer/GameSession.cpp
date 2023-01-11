@@ -6,10 +6,11 @@
 
 void GameSession::OnRecvPacket(BYTE* buffer, int32 len)
 {
-	ServerPacketHandler::HandlePacket(buffer, len);
+	PacketSessionRef session = PacketSessionRef();
+	PacketHeader* header = reinterpret_cast<PacketHeader*>(buffer);
 
 
-	 
+	ServerPacketHandler::HandlePacket(session, buffer, len);
 }
 
 void GameSession::OnSend(int32 len)
