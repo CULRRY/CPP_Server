@@ -16,5 +16,6 @@ public:
 	virtual void OnDisconnected() override;
 
 public:
+	Vector<PlayerRef> _players;
 };
 
