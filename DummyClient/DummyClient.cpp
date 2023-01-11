@@ -3,7 +3,7 @@
 #include "Service.h"
 #include "Session.h"
 #include "BufferReader.h"
-#include "ClientPacketHandler.h"
+#include "ServerPacketHandler.h"
 
 //WCHAR sendData[] = "asdsadsadasd";
 
@@ -17,7 +17,11 @@ protected:
 	}
 	void OnRecvPacket(BYTE* buffer, int32 len) override
 	{
-		ClientPacketHandler::HandlePacket(buffer, len);
+		PacketSessionRef session = PacketSessionRef();
+		PacketHeader* header = reinterpret_cast<PacketHeader*>(buffer);
+
+
+		ServerPacketHandler::HandlePacket(session, buffer, len);
 	}
 	void OnSend(int32 len) override
 	{
@@ -32,7 +36,7 @@ protected:
 int main()
 {
 	this_thread::sleep_for(1s);
-
+	ServerPacketHandler::Init();
 	cout << "Client" << endl;
 
 	ClientServiceRef service = MakeShared<ClientService>(

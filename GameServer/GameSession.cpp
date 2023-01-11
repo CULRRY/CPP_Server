@@ -2,7 +2,7 @@
 #include "GameSession.h"
 
 #include "GameSessionManager.h"
-#include "ServerPacketHandler.h"
+#include "ClientPacketHandler.h"
 
 void GameSession::OnRecvPacket(BYTE* buffer, int32 len)
 {
@@ -10,7 +10,7 @@ void GameSession::OnRecvPacket(BYTE* buffer, int32 len)
 	PacketHeader* header = reinterpret_cast<PacketHeader*>(buffer);
 
 
-	ServerPacketHandler::HandlePacket(session, buffer, len);
+	ClientPacketHandler::HandlePacket(session, buffer, len);
 }
 
 void GameSession::OnSend(int32 len)
