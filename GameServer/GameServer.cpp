@@ -7,6 +7,8 @@
 #include "BufferWriter.h"
 #include "ClientPacketHandler.h"
 #include "Protocol.pb.h"
+#include "Job.h"
+#include "Room.h"
 
 
 int main()
@@ -37,7 +39,8 @@ int main()
 
 	while (true)
 	{
-		this_thread::sleep_for(250ms);
+		GRoom.FlushJob();
+		this_thread::sleep_for(1ms);
 	}
 
 	GThreadManager->Join();
