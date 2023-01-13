@@ -8,6 +8,5 @@ public:
 	string					name;
 	Protocol::PlayerType	type = Protocol::PLAYER_TYPE_NONE;
 	GameSessionRef			ownerSession;
-	
 };
 

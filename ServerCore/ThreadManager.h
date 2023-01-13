@@ -15,6 +15,7 @@ public:
 	static void DestroyTLS();
 
 	static void DoGlobalQueueWork();
+	static void DistuributeResevedJobs();
 private:
 	Mutex			_lock;
 	vector<thread>	_threads;

@@ -23,12 +23,17 @@ void DoWorkerJob(ServerServiceRef& service)
 
 		service->GetIocpCore()->Dispatch(10);
 
+		ThreadManager::DistuributeResevedJobs();
+
 		ThreadManager::DoGlobalQueueWork();
 	}
 }
 
 int main()
 {
+	GRoom->DoTimer(1000, [] {cout << "Hello 1000" << endl; });
+	GRoom->DoTimer(2000, [] {cout << "Hello 2000" << endl; });
+	GRoom->DoTimer(3000, [] {cout << "Hello 3000" << endl; });
 	ClientPacketHandler::Init();
 
 	cout << "Server" << endl;

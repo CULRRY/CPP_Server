@@ -67,13 +67,14 @@ bool Handle_C_ENTER_GAME(PacketSessionRef& session, Protocol::C_ENTER_GAME& pkt)
 
 	uint64 index = pkt.playerindex();
 
-	PlayerRef player = gameSession->_players[index];
-	GRoom->DoAsync(&Room::Enter, player);
+	gameSession->_currentPlayer = gameSession->_players[index];
+	gameSession->_room = GRoom;
+	GRoom->DoAsync(&Room::Enter, gameSession->_currentPlayer);
 
 	Protocol::S_ENTER_GAME endGamePkt;
 	endGamePkt.set_success(true);
 	auto sendBuffer = ClientPacketHandler::MakeSendBuffer(endGamePkt);
-	player->ownerSession->Send(sendBuffer);
+	gameSession->_currentPlayer->ownerSession->Send(sendBuffer);
 
 	return true;
 }
