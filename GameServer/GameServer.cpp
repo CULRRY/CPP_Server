@@ -10,6 +10,22 @@
 #include "Job.h"
 #include "Room.h"
 
+enum
+{
+	WORKER_TICK = 64,
+};
+
+void DoWorkerJob(ServerServiceRef& service)
+{
+	while (true)
+	{
+		LEndTickCount = ::GetTickCount64() + WORKER_TICK;
+
+		service->GetIocpCore()->Dispatch(10);
+
+		ThreadManager::DoGlobalQueueWork();
+	}
+}
 
 int main()
 {
@@ -26,22 +42,16 @@ int main()
 
 	for (int32 i = 0; i < 5; i++)
 	{
-		GThreadManager->Launch([=]()
+		GThreadManager->Launch([&service]()
 			{
 				while (true)
 				{
-					service->GetIocpCore()->Dispatch();
+					DoWorkerJob(service);
 				}
 			});
 	}
 
-	char sendData[] = "Hello world";
-
-	while (true)
-	{
-		GRoom.FlushJob();
-		this_thread::sleep_for(1ms);
-	}
+	DoWorkerJob(service);
 
 	GThreadManager->Join();
 }
