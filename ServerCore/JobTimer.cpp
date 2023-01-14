@@ -33,7 +33,7 @@ void JobTimer::Distribute(uint64 now)
 	for (TimerItem& item : items)
 	{
 		if (JobQueueRef owner = item.jobData->owner.lock())
-			owner->Push(item.jobData->job);
+			owner->Push(item.jobData->job, true);
 
 		ObjectPool<JobData>::Push(item.jobData);
 	}
