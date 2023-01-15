@@ -10,6 +10,7 @@
 #include "Job.h"
 #include "Room.h"
 #include "DBConnectionPool.h"
+#include "DBBind.h"
 
 enum
 {
@@ -52,6 +53,8 @@ int main()
 			(									\
 				id int not null auto_increment, \
 				gold int null,					\
+				name NVARCHAR(50) NULL,			\
+				createDate DATETIME NULL,		\
 				primary key (id)				\
 			);";
 
@@ -66,17 +69,20 @@ int main()
 	{
 		DBConnection* dbConn = GDBConnectionPool->Pop();
 		// 기존에 바인딩 된 정보 날림
-		dbConn->Unbind();
 
-		// 넘길 인자 바인딩
+		DBBind<3, 0> dbBind(*dbConn, L"INSERT INTO Gold(gold, name, createDate) VALUES(?, ?, ?)");
 		int32 gold = 100;
-		SQLLEN len = 0;
+		WCHAR name[100] = L"호준";
+		TIMESTAMP_STRUCT ts = {};
+		ts.year = 2023;
+		ts.month = 1;
+		ts.day = 16;
 
-		// 넘길 인자 바인딩
-		ASSERT_CRASH(dbConn->BindParam(1, SQL_C_LONG, SQL_INTEGER, sizeof(gold), &gold, &len));
+		dbBind.BindParam(0, gold);
+		dbBind.BindParam(1, name);
+		dbBind.BindParam(2, ts);
 
-		// SQL 실행
-		ASSERT_CRASH(dbConn->Execute(L"INSERT INTO Gold(gold) VALUES(?)"));
+		ASSERT_CRASH(dbBind.Execute());
 
 		GDBConnectionPool->Push(dbConn);
 	}
@@ -85,30 +91,32 @@ int main()
 	{
 		DBConnection* dbConn = GDBConnectionPool->Pop();
 		// 기존에 바인딩 된 정보 날림
-		dbConn->Unbind();
-
+		DBBind<1, 4> dbBind(*dbConn, L"SELECT id, gold, name, createDate FROM Gold WHERE gold = (?)");
 		int32 gold = 100;
-		SQLLEN len = 0;
-		// 넘길 인자 바인딩
-		ASSERT_CRASH(dbConn->BindParam(1, SQL_C_LONG, SQL_INTEGER, sizeof(gold), &gold, &len));
-
 		int32 outId = 0;
-		SQLLEN outIdLen = 0;
-		ASSERT_CRASH(dbConn->BindCol(1, SQL_C_LONG, sizeof(outId), &outId, &outIdLen));
-
 		int32 outGold = 0;
-		SQLLEN outGoldLen = 0;
-		ASSERT_CRASH(dbConn->BindCol(2, SQL_C_LONG, sizeof(outGold), &outGold, &outGoldLen));
+		WCHAR outName[100];
+		TIMESTAMP_STRUCT outDate = {};
+		dbBind.BindParam(0, gold);
+		dbBind.BindCol(0, outId);
+		dbBind.BindCol(1, outGold);
+		dbBind.BindCol(2, outName);
+		dbBind.BindCol(3, outDate);
 
 		// SQL 실행
-		ASSERT_CRASH(dbConn->Execute(L"SELECT id, gold FROM Gold WHERE gold = (?)"));
+		ASSERT_CRASH(dbBind.Execute());
 
+		wcout.imbue(locale("kor"));
 		while (dbConn->Fetch())
 		{
-			cout << "Id: " << outId << " Gold : " << outGold << endl;
+			wcout << "Id: " << outId << " Gold : " << outGold << " Name : " << outName << endl;
+			wcout << "Date : " << outDate.year << " " << outDate.month << " " << outDate.day << endl;
 		}
 
 		GDBConnectionPool->Push(dbConn);
+
+
+		
 	}
 
 	ClientPacketHandler::Init();
