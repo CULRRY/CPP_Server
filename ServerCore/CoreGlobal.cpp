@@ -1,5 +1,7 @@
 #include "pch.h"
 #include "CoreGlobal.h"
+
+#include "DBConnectionPool.h"
 #include "ThreadManager.h"
 #include "DeadLockProfiler.h"
 #include "GlobalQueue.h"
@@ -14,6 +16,7 @@ GlobalQueue*		GGlobalQueue = nullptr;
 JobTimer*			GJobTimer = nullptr;
 
 DeadLockProfiler*	GDeadLockProfiler = nullptr;
+DBConnectionPool*	GDBConnectionPool = nullptr;
 
 class CoreGlobal
 {
@@ -26,6 +29,7 @@ public:
 		GGlobalQueue = new GlobalQueue();
 		GJobTimer = new JobTimer();
 		GDeadLockProfiler = new DeadLockProfiler();
+		GDBConnectionPool = new DBConnectionPool();
 		SocketUtils::Init();
 	}
 	~CoreGlobal()
@@ -36,6 +40,7 @@ public:
 		delete GGlobalQueue;
 		delete GJobTimer;
 		delete GDeadLockProfiler;
+		delete GDBConnectionPool;
 		SocketUtils::Clear();
 	}
 } GCoreGlobal;
